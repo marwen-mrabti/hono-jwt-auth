@@ -1,15 +1,15 @@
-import { Database } from "bun:sqlite";
-import { join } from "path";
+import { Database } from 'bun:sqlite';
+import { join } from 'path';
 
-const dbPath = join(".", "db.sqlite");
+const dbPath = join('.', 'db.sqlite');
 
 let db: Database;
 
 export const dbConnect = () => {
   if (!db) {
     db = new Database(dbPath);
-    console.log("db connected");
-    db.exec("PRAGMA journal_mode = WAL;");
+    console.log('db connected');
+    db.exec('PRAGMA journal_mode = WAL;');
 
     applySchema(db);
   }
