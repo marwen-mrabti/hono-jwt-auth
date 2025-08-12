@@ -16,7 +16,7 @@ export const dbConnect = () => {
   return db;
 };
 
-const applySchema = (dbInstance: Database) => {
+export const applySchema = (dbInstance: Database) => {
   dbInstance.exec(`
   CREATE TABLE IF NOT EXISTS USERS (
     id TEXT PRIMARY KEY,

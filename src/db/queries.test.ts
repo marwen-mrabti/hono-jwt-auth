@@ -1,19 +1,27 @@
-import { describe, expect, it } from 'bun:test';
-import { dbConnect } from '.';
+import { Database } from 'bun:sqlite';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { createTestDb } from '../test/test-db';
 import { getUserByEmail, insertUser } from './queries';
+let db: Database;
+
+beforeEach(() => {
+  db = createTestDb();
+});
+
+afterEach(() => {
+  db.close();
+});
 
 describe('insertUser', () => {
   it('should insert user in the Database', async () => {
-    const db = dbConnect();
-    const email = 'test0003@test.com';
+    const email = 'test01@test.com';
     const password = '0123456789';
     const userId = await insertUser({ db, email, password });
     expect(userId).toBeDefined();
   });
 
   it('should throw an error if the email is already in the Database', async () => {
-    const db = dbConnect();
-    const email = 'test0000@test.com';
+    const email = 'test01@test.com';
     const password = '0123456789';
     try {
       await insertUser({ db, email, password });
@@ -26,7 +34,6 @@ describe('insertUser', () => {
   });
 
   it('should throw an error if the password is empty', async () => {
-    const db = dbConnect();
     const email = 'test04@test.com';
     const password = '';
     try {
@@ -42,7 +49,6 @@ describe('insertUser', () => {
 
 describe('getUserByEmail', () => {
   it('should return the user with the given email', async () => {
-    const db = dbConnect();
     const email = 'testemail02@test.com';
     const password = '0123456789';
     await insertUser({ db, email, password });
