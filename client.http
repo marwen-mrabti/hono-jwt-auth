@@ -1,10 +1,12 @@
-GET http://localhost:9000/api/hello HTTP/1.1
+# GET http://localhost:9000/api/ HTTP/1.1
 
-POST http://localhost:9000/api/v1 HTTP/1.1
+POST http://localhost:9000/api/signup HTTP/1.1
 content-type: application/json
 
 {
-    "name": "sample",
-    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+    "email": "test03@test.com",
+    "password":"0123456789",
+    "favorite_color": "black",
+    "favorite_animal": "crow"
 }
 

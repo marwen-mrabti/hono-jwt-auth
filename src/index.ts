@@ -1,14 +1,19 @@
-import { Hono } from "hono";
-import { csrf } from "hono/csrf";
-import { jwt } from "hono/jwt";
+import { Hono } from 'hono';
+import { csrf } from 'hono/csrf';
+import { jwt } from 'hono/jwt';
+import { logger } from 'hono/logger';
+import { signUpHandlers } from './handlers/auth-handlers';
 
 const app = new Hono();
 
 app
-  .use("/api/*", csrf())
-  .use("/api/auth/*", jwt({ secret: process.env.JWT_SECRET!, cookie: "authToken" }))
-  .get("/", (c) => c.text("Hello Hono!"))
-  .get("/api/hello", (c) => c.text("Hello API!"));
+  .use(logger())
+  .use('/api/*', csrf())
+  .use(
+    '/api/auth/*',
+    jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' })
+  )
+  .post('/api/signup', ...signUpHandlers);
 
 export default {
   port: Number(process.env.PORT),

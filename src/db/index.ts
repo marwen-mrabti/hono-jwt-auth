@@ -25,7 +25,7 @@ const applySchema = (dbInstance: Database) => {
     favorite_color TEXT,
     favorite_animal TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `);
 };
