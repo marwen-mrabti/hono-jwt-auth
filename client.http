@@ -1,12 +1,18 @@
-# GET http://localhost:9000/api/ HTTP/1.1
+GET http://localhost:9000/api/auth/user/:id HTTP/1.1
+
+###
 
 POST http://localhost:9000/api/signup HTTP/1.1
 content-type: application/json
 
 {
     "email": "test03@test.com",
-    "password":"0123456789",
-    "favorite_color": "black",
-    "favorite_animal": "crow"
+    "password":"0123456789"
 }
+
+###
+
+DELETE http://localhost:9000/api/auth/user/delete/3ad062c9-4334-4faf-9587-8f177dedda12 HTTP/1.1
+content-type: application/json
+
 

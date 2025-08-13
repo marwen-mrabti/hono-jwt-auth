@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { csrf } from 'hono/csrf';
 import { jwt } from 'hono/jwt';
 import { logger } from 'hono/logger';
-import { signUpHandlers } from './handlers/auth-handlers';
+import { deleteUserHandlers, signUpHandlers } from './handlers/auth-handlers';
 
 const app = new Hono();
 
@@ -13,7 +13,9 @@ app
     '/api/auth/*',
     jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' })
   )
-  .post('/api/signup', ...signUpHandlers);
+  .post('/api/signup', ...signUpHandlers)
+  // .get('/api/auth/user/:id', )
+  .delete('/api/auth/user/delete/:id', ...deleteUserHandlers);
 
 export default {
   port: Number(process.env.PORT),

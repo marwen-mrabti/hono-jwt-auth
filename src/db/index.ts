@@ -7,7 +7,7 @@ let db: Database;
 
 export const dbConnect = () => {
   if (!db) {
-    db = new Database(dbPath);
+    db = new Database(dbPath, { strict: true });
     console.log('db connected');
     db.exec('PRAGMA journal_mode = WAL;');
 
