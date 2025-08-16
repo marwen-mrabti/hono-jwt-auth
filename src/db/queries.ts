@@ -84,17 +84,23 @@ export const getUserById = async ({
   userId,
 }: {
   db: Database;
-  userId: UUID | string;
+  userId: string;
 }): Promise<T_User | null> => {
   try {
     const userQuery = db.query(`
-      SELECT * FROM USERS WHERE id = :id
+      SELECT id, email, created_at  FROM USERS WHERE id = :id
     `);
 
     const user = userQuery.get({ id: userId }) as T_User | null;
+    if (!user) {
+      throw new UserNotFoundError(`User with ID ${userId} not found`);
+    }
     return user;
   } catch (error) {
-    throw new DatabaseError('Failed to fetch user by ID', error as Error);
+    if (!(error instanceof UserNotFoundError)) {
+      throw new DatabaseError('Failed to fetch user by ID', error as Error);
+    }
+    throw new UserNotFoundError(`User with ID ${userId} not found`);
   }
 };
 

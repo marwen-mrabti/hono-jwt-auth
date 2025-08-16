@@ -1,18 +1,17 @@
-GET http://localhost:9000/api/auth/user/:id HTTP/1.1
-
-###
-
+###? insert user
 POST http://localhost:9000/api/signup HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test03@test.com",
+    "email": "test04@test.com",
     "password":"0123456789"
 }
 
-###
+###? get user by id
+GET http://localhost:9000/api/auth/user/e57cd59c-07de-4852-a903-260654a8acf3
 
-DELETE http://localhost:9000/api/auth/user/delete/3ad062c9-4334-4faf-9587-8f177dedda12 HTTP/1.1
+###? delete user
+DELETE http://localhost:9000/api/auth/user/delete/bba06e28-e838-4dc6-bebf-ebfb1147f814 HTTP/1.1
 content-type: application/json
 
 

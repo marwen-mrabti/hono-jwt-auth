@@ -12,13 +12,9 @@ export const userSchema = z.object({
   updated_at: z.date().default(new Date()),
 });
 
-export const signupSchema = userSchema.omit({
-  id: true,
-  favorite_animal: true,
-  favorite_color: true,
-  created_at: true,
-  updated_at: true,
-});
-
 export type T_User = z.infer<typeof userSchema>;
 
+export const signupSchema = userSchema.pick({
+  email: true,
+  password: true,
+});

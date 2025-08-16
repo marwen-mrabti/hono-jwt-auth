@@ -2,7 +2,7 @@ import { setCookie } from 'hono/cookie';
 import { createFactory } from 'hono/factory';
 import { z } from 'zod';
 import { dbConnect } from '../db';
-import { deleteUser, insertUser } from '../db/queries';
+import { deleteUser, getUserById, insertUser } from '../db/queries';
 import { cookieOpts, generateToken } from '../helpers';
 import {
   DatabaseError,
@@ -78,6 +78,43 @@ export const signUpHandlers = factory.createHandlers(
     }
   }
 );
+
+export const getUserByIdHandlers = factory.createHandlers(async (c) => {
+  try {
+    const db = dbConnect();
+    const userId = c.req.param('id');
+    if (!userId) {
+      return c.json(
+        {
+          errors: ['please provide a valid user id'],
+        },
+        400
+      );
+    }
+    const user = await getUserById({ db, userId });
+    return c.json({ user });
+  } catch (error) {
+    if (error instanceof UserNotFoundError) {
+      return c.json({ errors: ['User not found'] }, 404);
+    }
+
+    if (error instanceof DatabaseError) {
+      return c.json(
+        {
+          errors: ['Database error occurred. Please try again.'],
+        },
+        500
+      );
+    }
+
+    return c.json(
+      {
+        errors: ['Internal server error'],
+      },
+      500
+    );
+  }
+});
 
 export const deleteUserHandlers = factory.createHandlers(async (c) => {
   try {
