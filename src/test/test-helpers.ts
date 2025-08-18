@@ -1,14 +1,14 @@
-export async function SignupRequest({
-  email = "testsignup@test.com",
-  password = "1234567890",
+export function SignupRequest({
+  email,
+  password,
 }: {
   email?: string;
   password?: string;
 }) {
-  return new Request("http://localhost:9000/api/signup", {
-    method: "POST",
+  return new Request('http://localhost:9000/api/signup', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,
@@ -17,17 +17,39 @@ export async function SignupRequest({
   });
 }
 
-export async function deleteUserRequest(userId: string, authToken: string | null) {
-  return new Request(`http://localhost:9000/api/auth/user/delete/${userId}`, {
-    method: "DELETE",
+export function LoginRequest({
+  email,
+  password,
+}: {
+  email?: string;
+  password?: string;
+}) {
+  return new Request('http://localhost:9000/api/login', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+}
+
+export function DeleteUserRequest(userId: string, authToken: string | null) {
+  return new Request(`http://localhost:9000/api/auth/user/delete/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
     },
   });
 }
 
-export function extractTokenFromCookie(cookieString: string | null, cookieName: string = "authToken"): string | null {
+export function extractTokenFromCookie(
+  cookieString: string | null,
+  cookieName: string = 'authToken'
+): string | null {
   if (!cookieString) {
     return null;
   }
@@ -42,14 +64,13 @@ export function extractTokenFromCookie(cookieString: string | null, cookieName: 
   const tokenStart = cookieStart + cookieName.length + 1;
 
   // Find the end of the token (either semicolon or end of string)
-  const tokenEnd = cookieString.indexOf(";", tokenStart);
+  const tokenEnd = cookieString.indexOf(';', tokenStart);
 
   // Extract the token
   if (tokenEnd === -1) {
     // Token goes to the end of the string
     return cookieString.substring(tokenStart).trim();
-  }
-  else {
+  } else {
     // Token ends at semicolon
     return cookieString.substring(tokenStart, tokenEnd).trim();
   }

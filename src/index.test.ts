@@ -1,18 +1,19 @@
-import type { Database } from "bun:sqlite";
+import type { Database } from 'bun:sqlite';
 
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import app from ".";
-import { createTestDb } from "./test/test-db";
+import app from '.';
+import { createTestDb } from './test/test-db';
 import {
-  deleteUserRequest,
+  DeleteUserRequest,
   extractTokenFromCookie,
+  LoginRequest,
   SignupRequest,
-} from "./test/test-helpers";
+} from './test/test-helpers';
 
 let db: Database;
 
-mock.module("./db/index.ts", () => {
+mock.module('./db/index.ts', () => {
   return { dbConnect: () => db };
 });
 
@@ -24,71 +25,110 @@ afterEach(() => {
   db.close();
 });
 
-describe("signup endpoint", () => {
-  it("should sign up a user", async () => {
-    const req = await SignupRequest({});
+describe('signup endpoint', () => {
+  it('should sign up a user', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+
+    const req = SignupRequest({ email, password });
     const res = await app.fetch(req);
     const json = await res.json();
+    const cookies = res.headers.get('set-cookie');
+
     expect(res.status).toBe(201);
     expect(json).toEqual({
-      message: "User registered successfully",
+      message: 'User registered successfully',
       user: {
         id: expect.any(String),
-        email: "testsignup@test.com",
+        email,
       },
     });
-    const cookies = res.headers.get("set-cookie");
     expect(cookies).toMatch(/authToken=/);
   });
 
-  it("should return 409 if email already exists", async () => {
-    const req1 = await SignupRequest({});
+  it('should return 409 if email already exists', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+
+    const req1 = SignupRequest({ email, password });
     const res1 = await app.fetch(req1);
     expect(res1.status).toBe(201);
 
-    const req2 = await SignupRequest({});
+    const req2 = SignupRequest({ email, password });
     const res2 = await app.fetch(req2);
     const json2 = await res2.json();
 
     expect(res2.status).toBe(409);
     expect(json2).toEqual({
-      errors: ["Email already exists"],
+      errors: ['Email already exists'],
     });
   });
 
-  it("should return error if missing email or password", async () => {
-    const email = "";
-    const password = "123456790";
-    const req = await SignupRequest({ email, password });
+  it('should return error if missing email or password', async () => {
+    const req = SignupRequest({ email: '', password: '' });
     const res = await app.fetch(req);
     const json = await res.json();
 
     expect(res.status).toBe(400);
     expect(json).toEqual({
       errors: {
-        email: ["you need to provide a valid email"],
-        password: ["Password must be at least 10 characters long."],
+        email: ['you need to provide a valid email'],
+        password: ['Password must be at least 10 characters long.'],
       },
     });
   });
 });
 
-describe("delete user endpoint", () => {
-  it("should delete the user with the given id", async () => {
+describe('login endpoint', () => {
+  it('should login user', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+
+    //signup  a user
+    const signupReq = SignupRequest({ email, password });
+    const signupRes = await app.fetch(signupReq);
+
+    expect(signupRes.status).toBe(201);
+
+    // login a user
+    const loginReq = LoginRequest({ email, password });
+    const loginRes = await app.fetch(loginReq);
+    const loginJson = await loginRes.json();
+    const cookies = loginRes.headers.get('set-cookie');
+
+    expect(loginRes.status).toBe(200);
+    expect(loginJson).toEqual({
+      message: 'Login successful',
+      user: {
+        id: expect.any(String),
+        email: 'test@test.com',
+      },
+    });
+    expect(cookies).toMatch(/authToken=/);
+  });
+});
+
+describe('delete user endpoint', () => {
+  it('should delete the user with the given id', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+
     // insert a user and get the user id
-    const signupReq = await SignupRequest({});
+    const signupReq = SignupRequest({ email, password });
     const signupRes = await app.fetch(signupReq);
     const signupJson = await signupRes.json();
-    const cookies = signupRes.headers.get("set-cookie");
-    const authToken = extractTokenFromCookie(cookies, "authToken");
+    const cookies = signupRes.headers.get('set-cookie');
+    expect(signupRes.status).toBe(201);
+    expect(cookies).toMatch(/authToken=/);
 
     // send a delete user request
-    const req = await deleteUserRequest(signupJson.user.id, authToken);
+    const authToken = extractTokenFromCookie(cookies, 'authToken');
+    const req = DeleteUserRequest(signupJson.user.id, authToken);
     const res = await app.fetch(req);
     const json = await res.json();
     expect(res.status).toBe(200);
     expect(json).toEqual({
-      message: "User deleted successfully",
+      message: 'User deleted successfully',
     });
   });
 });

@@ -7,11 +7,24 @@ content-type: application/json
     "password":"0123456789"
 }
 
-###? get user by id
-GET http://localhost:9000/api/auth/user/e57cd59c-07de-4852-a903-260654a8acf3
+###? login user
+POST http://localhost:9000/api/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "test06@test.com",
+    "password": "0123456789"
+}
+
+###? logout user
+POST http://localhost:9000/api/logout HTTP/1.1
+content-type: application/json
+
+###? get current user
+GET http://localhost:9000/api/auth/me
 
 ###? delete user
-DELETE http://localhost:9000/api/auth/user/delete/bba06e28-e838-4dc6-bebf-ebfb1147f814 HTTP/1.1
+DELETE http://localhost:9000/api/auth/user/delete/e57cd59c-07de-4852-a903-260654a8acf3 HTTP/1.1
 content-type: application/json
 
 
