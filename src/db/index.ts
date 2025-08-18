@@ -1,22 +1,22 @@
-import { Database } from 'bun:sqlite';
-import { join } from 'path';
+import { Database } from "bun:sqlite";
+import { join } from "node:path";
 
-const dbPath = join('.', 'db.sqlite');
+const dbPath = join(".", "db.sqlite");
 
 let db: Database;
 
-export const dbConnect = () => {
+export function dbConnect() {
   if (!db) {
     db = new Database(dbPath, { strict: true });
-    console.log('db connected');
-    db.exec('PRAGMA journal_mode = WAL;');
+    console.log("db connected");
+    db.exec("PRAGMA journal_mode = WAL;");
 
     applySchema(db);
   }
   return db;
-};
+}
 
-export const applySchema = (dbInstance: Database) => {
+export function applySchema(dbInstance: Database) {
   dbInstance.exec(`
   CREATE TABLE IF NOT EXISTS USERS (
     id TEXT PRIMARY KEY,
@@ -28,4 +28,4 @@ export const applySchema = (dbInstance: Database) => {
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `);
-};
+}

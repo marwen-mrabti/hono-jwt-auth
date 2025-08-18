@@ -3,7 +3,7 @@ POST http://localhost:9000/api/signup HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test04@test.com",
+    "email": "test06@test.com",
     "password":"0123456789"
 }
 

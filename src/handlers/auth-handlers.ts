@@ -1,15 +1,16 @@
-import { setCookie } from 'hono/cookie';
-import { createFactory } from 'hono/factory';
-import { z } from 'zod';
-import { dbConnect } from '../db';
-import { deleteUser, getUserById, insertUser } from '../db/queries';
-import { cookieOpts, generateToken } from '../helpers';
+import { setCookie } from "hono/cookie";
+import { createFactory } from "hono/factory";
+import { z } from "zod";
+
+import { dbConnect } from "../db";
+import { deleteUser, getUserById, insertUser } from "../db/queries";
+import { cookieOpts, generateToken } from "../helpers";
 import {
   DatabaseError,
   UserConflictError,
   UserNotFoundError,
-} from '../lib/errors';
-import { signupValidator } from '../middlewares/auth-middlewares';
+} from "../lib/errors";
+import { signupValidator } from "../middlewares/auth-middlewares";
 
 const factory = createFactory();
 
@@ -21,7 +22,7 @@ export const signUpHandlers = factory.createHandlers(
       const db = dbConnect();
 
       // Read validated request body
-      const body = c.req.valid('json');
+      const body = c.req.valid("json");
       const { email, password } = body;
 
       // Insert user into database
@@ -35,83 +36,87 @@ export const signUpHandlers = factory.createHandlers(
       const token = await generateToken(userId);
 
       // Set JWT token in cookies
-      setCookie(c, 'authToken', token, cookieOpts);
+      setCookie(c, "authToken", token, cookieOpts);
 
       // Send success response
       return c.json(
         {
-          message: 'User registered successfully',
+          message: "User registered successfully",
           user: {
             id: userId,
             email,
           },
         },
-        201
+        201,
       );
-    } catch (error) {
-      console.error('🚨 Signup error:', error);
-
+    }
+    catch (error) {
       if (error instanceof UserConflictError) {
         return c.json(
           {
-            errors: ['Email already exists'],
+            errors: ["Email already exists"],
           },
-          409
+          409,
         );
       }
 
+      console.error("🚨 Signup error:", error);
       if (error instanceof DatabaseError) {
         return c.json(
           {
-            errors: ['Database error occurred. Please try again.'],
+            errors: ["Database error occurred. Please try again."],
           },
-          500
+          500,
         );
       }
 
       return c.json(
         {
-          errors: ['Internal server error'],
+          errors: ["Internal server error"],
         },
-        500
+        500,
       );
     }
-  }
+  },
 );
 
 export const getUserByIdHandlers = factory.createHandlers(async (c) => {
   try {
     const db = dbConnect();
-    const userId = c.req.param('id');
+    const userId = c.req.param("id");
     if (!userId) {
       return c.json(
         {
-          errors: ['please provide a valid user id'],
+          errors: ["please provide a valid user id"],
         },
-        400
+        400,
       );
     }
     const user = await getUserById({ db, userId });
+    if (!user) {
+      throw new UserNotFoundError();
+    }
     return c.json({ user });
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof UserNotFoundError) {
-      return c.json({ errors: ['User not found'] }, 404);
+      return c.json({ errors: ["User not found"] }, 404);
     }
 
     if (error instanceof DatabaseError) {
       return c.json(
         {
-          errors: ['Database error occurred. Please try again.'],
+          errors: ["Database error occurred. Please try again."],
         },
-        500
+        500,
       );
     }
 
     return c.json(
       {
-        errors: ['Internal server error'],
+        errors: ["Internal server error"],
       },
-      500
+      500,
     );
   }
 });
@@ -119,21 +124,21 @@ export const getUserByIdHandlers = factory.createHandlers(async (c) => {
 export const deleteUserHandlers = factory.createHandlers(async (c) => {
   try {
     const db = dbConnect();
-    const userId = c.req.param('id');
+    const userId = c.req.param("id");
 
     // Validate userId parameter
     if (!userId) {
       return c.json(
         {
-          errors: ['User ID is required'],
+          errors: ["User ID is required"],
         },
-        400
+        400,
       );
     }
 
     // Validate UUID format (optional but recommended)
     const isIdValid = z
-      .uuid('please provide a valid user id')
+      .uuid("please provide a valid user id")
       .safeParse(userId);
     if (!isIdValid.success) {
       const errors = z.flattenError(isIdValid.error);
@@ -142,7 +147,7 @@ export const deleteUserHandlers = factory.createHandlers(async (c) => {
         {
           errors: errors.formErrors,
         },
-        400
+        400,
       );
     }
 
@@ -150,31 +155,32 @@ export const deleteUserHandlers = factory.createHandlers(async (c) => {
 
     return c.json(
       {
-        message: 'User deleted successfully',
+        message: "User deleted successfully",
       },
-      200
+      200,
     );
-  } catch (error) {
-    console.error('🚨 delete user error:', error);
+  }
+  catch (error) {
+    console.error("🚨 delete user error:", error);
 
     if (error instanceof UserNotFoundError) {
-      return c.json({ errors: ['User not found'] }, 404);
+      return c.json({ errors: ["User not found"] }, 404);
     }
 
     if (error instanceof DatabaseError) {
       return c.json(
         {
-          errors: ['Database error occurred. Please try again.'],
+          errors: ["Database error occurred. Please try again."],
         },
-        500
+        500,
       );
     }
 
     return c.json(
       {
-        errors: ['Internal server error'],
+        errors: ["Internal server error"],
       },
-      500
+      500,
     );
   }
 });

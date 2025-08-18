@@ -1,9 +1,10 @@
-import { Database } from 'bun:sqlite';
-import { applySchema } from '../db';
+import { Database } from "bun:sqlite";
 
-export const createTestDb = (): Database => {
-  const db = new Database(':memory:');
+import { applySchema } from "../db";
+
+export function createTestDb(): Database {
+  const db = new Database(":memory:", { strict: true });
   applySchema(db);
   db.exec(`PRAGMA journal_mode = WAL;`);
   return db;
-};
+}

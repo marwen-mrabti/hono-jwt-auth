@@ -1,13 +1,17 @@
-import { Database } from 'bun:sqlite';
-import { type UUID, randomUUID } from 'crypto';
+import type { Database } from "bun:sqlite";
+import type { UUID } from "node:crypto";
+
+import { randomUUID } from "node:crypto";
+
+import type { T_User } from "../schemas/auth-schema";
+
 import {
   DatabaseError,
   UserConflictError,
   UserNotFoundError,
-} from '../lib/errors';
-import type { T_User } from '../schemas/auth-schema';
+} from "../lib/errors";
 
-export const insertUser = async ({
+export async function insertUser({
   db,
   email,
   password,
@@ -15,12 +19,12 @@ export const insertUser = async ({
   db: Database;
   email: string;
   password: string;
-}): Promise<UUID> => {
+}): Promise<UUID> {
   try {
     const userId = randomUUID();
 
     const passwordHash = await Bun.password.hash(password, {
-      algorithm: 'bcrypt',
+      algorithm: "bcrypt",
       cost: 6,
     });
 
@@ -30,39 +34,49 @@ export const insertUser = async ({
       RETURNING id
     `);
 
-    const user = insertQuery.get({ id: userId, email, passwordHash }) as {
+    const user = (await insertQuery.get({
+      id: userId,
+      email,
+      passwordHash,
+    })) as {
       id: UUID;
     } | null;
 
     if (!user) {
-      throw new DatabaseError('Failed to insert user');
+      throw new DatabaseError("Failed to insert user");
     }
 
     return user.id;
-  } catch (error) {
+  }
+  catch (error) {
     // Handle SQLite unique constraint violation
     if (
-      error instanceof Error &&
-      error.message.includes('UNIQUE constraint failed')
+      error instanceof Error
+      && error.message.includes("UNIQUE constraint failed")
     ) {
-      throw new UserConflictError('User with this email already exists');
+      throw new UserConflictError("User with this email already exists");
     }
 
     if (error instanceof UserConflictError || error instanceof DatabaseError) {
       throw error;
     }
 
-    throw new DatabaseError('Failed to create user', error as Error);
+    const errorMessage
+      = error instanceof Error ? error.message : "failed to create user";
+    throw new DatabaseError(
+      errorMessage,
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
-};
+}
 
-export const getUserByEmail = async ({
+export async function getUserByEmail({
   db,
   email,
 }: {
   db: Database;
   email: string;
-}): Promise<{ id: UUID; password_hash: string } | null> => {
+}): Promise<{ id: UUID; password_hash: string } | null> {
   try {
     const userQuery = db.query(`
       SELECT id, password_hash FROM USERS WHERE email = :email
@@ -74,43 +88,40 @@ export const getUserByEmail = async ({
     } | null;
 
     return user;
-  } catch (error) {
-    throw new DatabaseError('Failed to fetch user by email', error as Error);
   }
-};
+  catch (error) {
+    throw new DatabaseError("Failed to fetch user by email", error as Error);
+  }
+}
 
-export const getUserById = async ({
+export async function getUserById({
   db,
   userId,
 }: {
   db: Database;
   userId: string;
-}): Promise<T_User | null> => {
+}): Promise<T_User | null> {
   try {
     const userQuery = db.query(`
       SELECT id, email, created_at  FROM USERS WHERE id = :id
     `);
 
     const user = userQuery.get({ id: userId }) as T_User | null;
-    if (!user) {
-      throw new UserNotFoundError(`User with ID ${userId} not found`);
-    }
-    return user;
-  } catch (error) {
-    if (!(error instanceof UserNotFoundError)) {
-      throw new DatabaseError('Failed to fetch user by ID', error as Error);
-    }
-    throw new UserNotFoundError(`User with ID ${userId} not found`);
-  }
-};
 
-export const deleteUser = async ({
+    return user;
+  }
+  catch (error) {
+    throw new DatabaseError("Failed to fetch user by ID", error as Error);
+  }
+}
+
+export async function deleteUser({
   db,
   userId,
 }: {
   db: Database;
   userId: UUID | string;
-}): Promise<void> => {
+}): Promise<void> {
   try {
     const deleteQuery = db.query(`
       DELETE FROM USERS WHERE id = :id
@@ -122,10 +133,11 @@ export const deleteUser = async ({
     if (result.changes === 0) {
       throw new UserNotFoundError(`User with ID ${userId} not found`);
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof UserNotFoundError) {
       throw error;
     }
-    throw new DatabaseError('Failed to delete user', error as Error);
+    throw new DatabaseError("Failed to delete user", error as Error);
   }
-};
+}
