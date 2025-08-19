@@ -12,7 +12,7 @@ POST http://localhost:9000/api/login HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test06@test.com",
+    "email": "test09@test.com",
     "password": "0123456789"
 }
 
@@ -24,7 +24,7 @@ content-type: application/json
 GET http://localhost:9000/api/auth/me
 
 ###? delete user
-DELETE http://localhost:9000/api/auth/user/delete/e57cd59c-07de-4852-a903-260654a8acf3 HTTP/1.1
+DELETE http://localhost:9000/api/auth/user/delete/e57cd59c-07de-4852-a903-2654a8acf3 HTTP/1.1
 content-type: application/json
 
 

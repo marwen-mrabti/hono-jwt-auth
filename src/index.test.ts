@@ -8,6 +8,7 @@ import {
   DeleteUserRequest,
   extractTokenFromCookie,
   LoginRequest,
+  LogoutRequest,
   SignupRequest,
 } from './test/test-helpers';
 
@@ -65,22 +66,19 @@ describe('signup endpoint', () => {
   });
 
   it('should return error if missing email or password', async () => {
-    const req = SignupRequest({ email: '', password: '' });
+    const req = SignupRequest({});
     const res = await app.fetch(req);
     const json = await res.json();
 
     expect(res.status).toBe(400);
     expect(json).toEqual({
-      errors: {
-        email: ['you need to provide a valid email'],
-        password: ['Password must be at least 10 characters long.'],
-      },
+      errors: ['you need to provide a valid email', 'password is required'],
     });
   });
 });
 
 describe('login endpoint', () => {
-  it('should login user', async () => {
+  it('should login a user', async () => {
     const email = 'test@test.com';
     const password = 'password123';
 
@@ -105,6 +103,66 @@ describe('login endpoint', () => {
       },
     });
     expect(cookies).toMatch(/authToken=/);
+  });
+
+  it('should return 400 if missing email or password', async () => {
+    const loginReq = LoginRequest({});
+    const loginRes = await app.fetch(loginReq);
+    const loginJson = await loginRes.json();
+
+    expect(loginRes.status).toBe(400);
+    expect(loginJson).toEqual({
+      errors: ['you need to provide a valid email', 'password is required'],
+    });
+  });
+
+  it('should return 401 if the password provided is not valid', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+
+    //signup  a user
+    const signupReq = SignupRequest({ email, password });
+    const signupRes = await app.fetch(signupReq);
+
+    expect(signupRes.status).toBe(201);
+
+    // login a user
+    const loginReq = LoginRequest({ email, password: 'wrongPassword' });
+    const loginRes = await app.fetch(loginReq);
+    const loginJson = await loginRes.json();
+
+    expect(loginRes.status).toBe(401);
+    expect(loginJson).toEqual({
+      errors: ['Invalid Credentials'],
+    });
+  });
+});
+
+describe('logout endpoint', () => {
+  it('should logout a user', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+    //signup  a user
+    const signupReq = SignupRequest({ email, password });
+    const signupRes = await app.fetch(signupReq);
+    expect(signupRes.status).toBe(201);
+
+    // login a user
+    const loginReq = LoginRequest({ email, password });
+    const loginRes = await app.fetch(loginReq);
+    expect(loginRes.status).toBe(200);
+
+    // logout
+    const logoutReq = LogoutRequest();
+    const logoutRes = await app.fetch(logoutReq);
+    const logoutJson = await logoutRes.json();
+    const cookies = logoutRes.headers.get('set-cookie');
+
+    expect(logoutRes.status).toBe(200);
+    expect(cookies).toMatch(/authToken=;/);
+    expect(logoutJson).toEqual({
+      message: 'user logged out successfully.',
+    });
   });
 });
 

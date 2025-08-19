@@ -36,6 +36,15 @@ export function LoginRequest({
   });
 }
 
+export function LogoutRequest() {
+  return new Request('http://localhost:9000/api/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 export function DeleteUserRequest(userId: string, authToken: string | null) {
   return new Request(`http://localhost:9000/api/auth/user/delete/${userId}`, {
     method: 'DELETE',

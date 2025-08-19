@@ -4,7 +4,7 @@ export const userSchema = z.object({
   id: z.uuid(),
   email: z.email('you need to provide a valid email'),
   password: z
-    .string()
+    .string('password is required')
     .min(10, { message: 'Password must be at least 10 characters long.' }),
   favorite_color: z.string().max(20, 'too long').optional(),
   favorite_animal: z.string().max(20, 'too long').optional(),
@@ -20,5 +20,9 @@ export const signupSchema = userSchema.pick({
 });
 
 export const loginSchema = signupSchema.extend({
-  password: z.string(),
+  password: z.string('password is required'),
+});
+
+export const paramSchema = z.object({
+  id: z.uuid('Invalid User ID'),
 });

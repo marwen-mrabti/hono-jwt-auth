@@ -8,7 +8,7 @@ import { DatabaseError, UserConflictError } from '../lib/errors';
 import {
   loginValidator,
   signupValidator,
-} from '../middlewares/auth-middlewares';
+} from '../middlewares/validator-middlewares';
 
 const factory = createFactory();
 
@@ -88,8 +88,9 @@ export const loginHandlers = factory.createHandlers(
 
       // fetch user with the provided email
       const user = await getUserByEmail({ db, email });
+      // if user is not found, return 401
       if (!user) {
-        return c.json({ errors: ['Invalid credentials'] }, 401);
+        return c.json({ errors: ['Invalid Credentials'] }, 401);
       }
 
       // verify the password
@@ -97,8 +98,10 @@ export const loginHandlers = factory.createHandlers(
         password,
         user.password_hash
       );
+
+      // if passwords don't match return 401
       if (!isPasswordMatch) {
-        return c.json({ errors: ['Invalid credentials'] }, 401);
+        return c.json({ errors: ['Invalid Credentials'] }, 401);
       }
 
       // if the passwords match,  generate JWT token and set authToken cookie
@@ -117,8 +120,8 @@ export const loginHandlers = factory.createHandlers(
         200
       );
     } catch (error) {
-      console.log(error);
-      return c.json({ errors: ['something went wrong! please try again.'] });
+      console.error(error);
+      return c.json({ errors: ['Internal Server Error.'] }, 500);
     }
   }
 );
@@ -128,7 +131,7 @@ export const logoutHandlers = factory.createHandlers(async (c) => {
     deleteCookie(c, 'authToken', cookieOpts);
     return c.json({ message: 'user logged out successfully.' }, 200);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return c.json({ errors: ['failed to logout! please try again.'] }, 500);
   }
 });
