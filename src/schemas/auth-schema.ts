@@ -23,6 +23,6 @@ export const loginSchema = signupSchema.extend({
   password: z.string('password is required'),
 });
 
-export const paramSchema = z.object({
+export const IDSchema = z.object({
   id: z.uuid('Invalid User ID'),
 });

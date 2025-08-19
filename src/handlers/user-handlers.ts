@@ -1,6 +1,6 @@
 import { createFactory } from 'hono/factory';
 import { dbConnect } from '../db';
-import { deleteUser } from '../db/queries';
+import { deleteUser, getUserById } from '../db/queries';
 import { DatabaseError, UserNotFoundError } from '../lib/errors';
 import { paramValidator } from '../middlewares/validator-middlewares';
 
@@ -8,11 +8,25 @@ const factory = createFactory();
 
 export const getCurrentUserHandlers = factory.createHandlers(async (c) => {
   try {
-    return c.json({ message: 'current user' });
+    const db = dbConnect();
+
+    const payload = c.get('jwtPayload');
+    if (!payload || !payload.sub) {
+      return c.json({ errors: ['Unauthorized access'] }, 401);
+    }
+
+    const userId = payload.sub as string;
+    const user = await getUserById({ db, userId });
+
+    if (!user) {
+      return c.json({ errors: ['User not found'] }, 404);
+    }
+
+    return c.json({ user }, 200);
   } catch (error) {
     console.error('🚨 current user error:', error);
 
-    return c.json({ errors: ['failed to get user'] });
+    return c.json({ errors: ['failed to get current user'] }, 500);
   }
 });
 

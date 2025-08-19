@@ -1,7 +1,7 @@
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 
-import { loginSchema, paramSchema, signupSchema } from '../schemas/auth-schema';
+import { loginSchema, IDSchema, signupSchema } from '../schemas/auth-schema';
 
 export const createValidator = <T extends z.ZodSchema>(
   schema: T,
@@ -24,5 +24,5 @@ export const createValidator = <T extends z.ZodSchema>(
 export const signupValidator = createValidator(signupSchema);
 export const loginValidator = createValidator(loginSchema);
 
-export const paramValidator = createValidator(paramSchema, 'param');
+export const paramValidator = createValidator(IDSchema, 'param');
 // export const queryValidator = createValidator(querySchema, 'query');

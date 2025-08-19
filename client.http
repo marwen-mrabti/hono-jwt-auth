@@ -8,11 +8,12 @@ content-type: application/json
 }
 
 ###? login user
+# @name login
 POST http://localhost:9000/api/login HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test09@test.com",
+    "email": "test01@test.com",
     "password": "0123456789"
 }
 
@@ -22,6 +23,7 @@ content-type: application/json
 
 ###? get current user
 GET http://localhost:9000/api/auth/me
+Cookie: {{{{login.response.headers.Set-Cookie}}}}
 
 ###? delete user
 DELETE http://localhost:9000/api/auth/user/delete/e57cd59c-07de-4852-a903-2654a8acf3 HTTP/1.1

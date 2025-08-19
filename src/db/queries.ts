@@ -3,8 +3,6 @@ import type { UUID } from 'node:crypto';
 
 import { randomUUID } from 'node:crypto';
 
-import type { T_User } from '../schemas/auth-schema';
-
 import {
   DatabaseError,
   UserConflictError,
@@ -94,13 +92,18 @@ export async function getUserById({
 }: {
   db: Database;
   userId: string;
-}): Promise<T_User | null> {
+}) {
   try {
     const userQuery = db.query(`
       SELECT id, email, created_at  FROM USERS WHERE id = :id
     `);
 
-    const user = (await userQuery.get({ id: userId })) as T_User | null;
+    const user = (await userQuery.get({ id: userId })) as {
+      id: string;
+      email: string;
+      created_at: Date;
+    } | null;
+
 
     return user;
   } catch (error) {
